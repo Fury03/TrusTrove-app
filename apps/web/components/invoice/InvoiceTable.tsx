@@ -476,22 +476,6 @@ export function InvoiceTable({
             >
               <thead style={{ display: "block" }}>
                 <tr className="flex border-b border-border/60 bg-[#080c10]/80 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                  {selectable && (
-                    <th
-                      scope="col"
-                      style={{ flex: SELECT_COL_FLEX }}
-                      className="text-left"
-                    >
-                      <input
-                        ref={selectAllRef}
-                        type="checkbox"
-                        className={CHECKBOX_CLASSES}
-                        checked={allOnPageSelected}
-                        onChange={toggleAllOnPage}
-                        aria-label="Select all invoices on this page"
-                      />
-                    </th>
-                  )}
                   <th
                     scope="col"
                     style={{ flex: COL_FLEX[0] }}
@@ -595,22 +579,6 @@ export function InvoiceTable({
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
                     >
-                      {selectable && (
-                        <td
-                          style={{ flex: SELECT_COL_FLEX }}
-                          // Clicking the checkbox must not also trigger the
-                          // row's single-select handler.
-                          onClick={(event) => event.stopPropagation()}
-                        >
-                          <input
-                            type="checkbox"
-                            className={CHECKBOX_CLASSES}
-                            checked={isChecked}
-                            onChange={() => toggleRowSelection(invoice.id)}
-                            aria-label={`Select invoice ${invoice.id}`}
-                          />
-                        </td>
-                      )}
                       <td
                         style={{ flex: COL_FLEX[0] }}
                         className="font-bold text-primary"
