@@ -96,7 +96,9 @@ describe("InvoiceTable", () => {
   it("marks the active row with aria-selected=true", () => {
     render(<InvoiceTable invoices={mockInvoices as any} activeId="1" />);
     const rows = screen.getAllByRole("row");
-    const activeRow = rows.find((r) => r.getAttribute("aria-selected") === "true");
+    const activeRow = rows.find(
+      (r) => r.getAttribute("aria-selected") === "true",
+    );
     expect(activeRow).toBeTruthy();
   });
 
@@ -104,12 +106,17 @@ describe("InvoiceTable", () => {
   it("only the first data row has tabIndex=0 initially when selectable", () => {
     const onSelectInvoice = vi.fn();
     render(
-      <InvoiceTable invoices={mockInvoices as any} onSelectInvoice={onSelectInvoice} />,
+      <InvoiceTable
+        invoices={mockInvoices as any}
+        onSelectInvoice={onSelectInvoice}
+      />,
     );
     const rows = screen.getAllByRole("row");
     // rows[0] is the header row (<tr> in <thead>), rows[1] and rows[2] are data rows
     const dataRows = rows.filter((r) => r.getAttribute("tabindex") !== null);
-    const tabZeroRows = dataRows.filter((r) => r.getAttribute("tabindex") === "0");
+    const tabZeroRows = dataRows.filter(
+      (r) => r.getAttribute("tabindex") === "0",
+    );
     expect(tabZeroRows).toHaveLength(1);
   });
 
@@ -125,21 +132,29 @@ describe("InvoiceTable", () => {
   it("ArrowDown moves focus to the next row", () => {
     const onSelectInvoice = vi.fn();
     render(
-      <InvoiceTable invoices={mockInvoices as any} onSelectInvoice={onSelectInvoice} />,
+      <InvoiceTable
+        invoices={mockInvoices as any}
+        onSelectInvoice={onSelectInvoice}
+      />,
     );
     const rows = screen.getAllByRole("row");
     const firstDataRow = rows.find((r) => r.getAttribute("tabindex") === "0");
     expect(firstDataRow).toBeTruthy();
     fireEvent.keyDown(firstDataRow!, { key: "ArrowDown" });
     const rowsAfter = screen.getAllByRole("row");
-    const newFocused = rowsAfter.find((r) => r.getAttribute("tabindex") === "0");
+    const newFocused = rowsAfter.find(
+      (r) => r.getAttribute("tabindex") === "0",
+    );
     expect(newFocused).not.toBe(firstDataRow);
   });
 
   it("Enter key calls onSelectInvoice for the focused row", () => {
     const onSelectInvoice = vi.fn();
     render(
-      <InvoiceTable invoices={mockInvoices as any} onSelectInvoice={onSelectInvoice} />,
+      <InvoiceTable
+        invoices={mockInvoices as any}
+        onSelectInvoice={onSelectInvoice}
+      />,
     );
     const rows = screen.getAllByRole("row");
     const firstDataRow = rows.find((r) => r.getAttribute("tabindex") === "0");
@@ -147,5 +162,283 @@ describe("InvoiceTable", () => {
     expect(onSelectInvoice).toHaveBeenCalledWith(
       expect.objectContaining({ id: mockInvoices[0].id }),
     );
+  });
+
+  // #791 — multi-select for comparison
+  describe("multi-select mode", () => {
+    it("renders no checkboxes unless selectable is set", () => {
+      render(<InvoiceTable invoices={mockInvoices as any} />);
+      expect(screen.queryAllByRole("checkbox")).toHaveLength(0);
+      expect(screen.queryByText(/selected/i)).not.toBeInTheDocument();
+    });
+
+    it("adds a checkbox column plus a select-all checkbox when selectable", () => {
+      render(<InvoiceTable invoices={mockInvoices as any} selectable />);
+
+      const headers = screen.getAllByRole("columnheader");
+      expect(headers).toHaveLength(7);
+
+      expect(
+        screen.getByRole("checkbox", {
+          name: /select all invoices on this page/i,
+        }),
+      ).toBeInTheDocument();
+      // One per row, plus the header checkbox.
+      expect(screen.getAllByRole("checkbox")).toHaveLength(
+        mockInvoices.length + 1,
+      );
+    });
+
+    it("labels each row checkbox with its invoice id", () => {
+      render(<InvoiceTable invoices={mockInvoices as any} selectable />);
+      mockInvoices.forEach((invoice) => {
+        expect(
+          screen.getByRole("checkbox", {
+            name: new RegExp(`select invoice ${invoice.id}$`, "i"),
+          }),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("reports a selection when a row checkbox is toggled", () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+
+      fireEvent.click(
+        screen.getByRole("checkbox", { name: /select invoice 1$/i }),
+      );
+      expect(onSelectionChange).toHaveBeenCalledWith(["1"]);
+    });
+
+    it("tracks its own selection when selectedIds is not supplied", () => {
+      render(<InvoiceTable invoices={mockInvoices as any} selectable />);
+
+      const rowCheckbox = screen.getByRole("checkbox", {
+        name: /select invoice 1$/i,
+      }) as HTMLInputElement;
+
+      expect(rowCheckbox.checked).toBe(false);
+      fireEvent.click(rowCheckbox);
+      expect(rowCheckbox.checked).toBe(true);
+      expect(screen.getByText(/1 selected/i)).toBeInTheDocument();
+    });
+
+    it("deselects an already-selected row", () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          selectedIds={["1", "2"]}
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+
+      fireEvent.click(
+        screen.getByRole("checkbox", { name: /select invoice 1$/i }),
+      );
+      expect(onSelectionChange).toHaveBeenCalledWith(["2"]);
+    });
+
+    it("honors a controlled selectedIds value", () => {
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          selectedIds={["2"]}
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      const first = screen.getByRole("checkbox", {
+        name: /select invoice 1$/i,
+      }) as HTMLInputElement;
+      const second = screen.getByRole("checkbox", {
+        name: /select invoice 2$/i,
+      }) as HTMLInputElement;
+
+      expect(first.checked).toBe(false);
+      expect(second.checked).toBe(true);
+      expect(screen.getByText(/1 selected/i)).toBeInTheDocument();
+    });
+
+    it("select-all selects every invoice on the page", () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+
+      fireEvent.click(
+        screen.getByRole("checkbox", {
+          name: /select all invoices on this page/i,
+        }),
+      );
+      expect(onSelectionChange).toHaveBeenCalledWith(["1", "2"]);
+    });
+
+    it("select-all clears only the current page, preserving other pages", () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          selectedIds={["1", "2", "off-page"]}
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+
+      const selectAll = screen.getByRole("checkbox", {
+        name: /select all invoices on this page/i,
+      }) as HTMLInputElement;
+      expect(selectAll.checked).toBe(true);
+
+      fireEvent.click(selectAll);
+      expect(onSelectionChange).toHaveBeenCalledWith(["off-page"]);
+    });
+
+    it("select-all is indeterminate when only some rows are selected", () => {
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          selectedIds={["1"]}
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      const selectAll = screen.getByRole("checkbox", {
+        name: /select all invoices on this page/i,
+      }) as HTMLInputElement;
+      expect(selectAll.checked).toBe(false);
+      expect(selectAll.indeterminate).toBe(true);
+    });
+
+    it("shows the selected count and clears it from the toolbar", () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          selectedIds={["1", "2"]}
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+
+      expect(screen.getByText(/2 selected/i)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: /clear selection/i }));
+      expect(onSelectionChange).toHaveBeenCalledWith([]);
+    });
+
+    it("hides Clear selection while nothing is selected", () => {
+      render(<InvoiceTable invoices={mockInvoices as any} selectable />);
+      expect(screen.getByText(/0 selected/i)).toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: /clear selection/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("checkboxes are keyboard-operable", () => {
+      const onSelectionChange = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          onSelectionChange={onSelectionChange}
+        />,
+      );
+
+      const rowCheckbox = screen.getByRole("checkbox", {
+        name: /select invoice 1$/i,
+      });
+      // Native checkboxes stay in the tab order and toggle on Space.
+      expect(rowCheckbox).not.toHaveAttribute("tabindex", "-1");
+      rowCheckbox.focus();
+      expect(document.activeElement).toBe(rowCheckbox);
+      fireEvent.click(rowCheckbox);
+      expect(onSelectionChange).toHaveBeenCalledWith(["1"]);
+    });
+
+    it("toggling a checkbox does not trigger row single-select", () => {
+      const onSelectInvoice = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          onSelectInvoice={onSelectInvoice}
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      fireEvent.click(
+        screen.getByRole("checkbox", { name: /select invoice 1$/i }),
+      );
+      expect(onSelectInvoice).not.toHaveBeenCalled();
+    });
+
+    it("Space on a focused checkbox does not also fire onSelectInvoice", () => {
+      const onSelectInvoice = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          onSelectInvoice={onSelectInvoice}
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      const rowCheckbox = screen.getByRole("checkbox", {
+        name: /select invoice 1$/i,
+      });
+      // The keydown bubbles to the <tr>, which must ignore it.
+      fireEvent.keyDown(rowCheckbox, { key: " ", bubbles: true });
+      expect(onSelectInvoice).not.toHaveBeenCalled();
+    });
+
+    it("marks selected rows with aria-selected in multi-select mode", () => {
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          selectedIds={["2"]}
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      const selectedRows = screen
+        .getAllByRole("row")
+        .filter((r) => r.getAttribute("aria-selected") === "true");
+      expect(selectedRows).toHaveLength(1);
+    });
+
+    it("keeps row keyboard navigation working alongside checkboxes", () => {
+      const onSelectInvoice = vi.fn();
+      render(
+        <InvoiceTable
+          invoices={mockInvoices as any}
+          selectable
+          onSelectInvoice={onSelectInvoice}
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      const firstDataRow = screen
+        .getAllByRole("row")
+        .find((r) => r.getAttribute("tabindex") === "0");
+      expect(firstDataRow).toBeTruthy();
+      fireEvent.keyDown(firstDataRow!, { key: "Enter" });
+      expect(onSelectInvoice).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "1" }),
+      );
+    });
   });
 });

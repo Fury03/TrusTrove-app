@@ -212,7 +212,6 @@ func (l *EventListener) pollEvents(ctx context.Context, startLedger int32) (int3
 	filters := []EventFilter{{Type: "contract", ContractIDs: contractIDs}}
 	cursor := ""
 	var latestLedgerSeq int32
-	var events []SorobanEvent
 	for {
 		params := GetEventsParams{
 			StartLedger: startLedger,
@@ -256,23 +255,6 @@ func (l *EventListener) pollEvents(ctx context.Context, startLedger int32) (int3
 		}
 	}
 
-	ids := make([]string, 0, len(events))
-	for _, event := range events {
-		ids = append(ids, event.ID)
-	}
-	processed, err := db.AreEventsProcessed(ctx, ids)
-	if err != nil {
-		slog.Error("Failed to check if events are processed", "error", err)
-		processed = nil
-	}
-	for _, event := range events {
-		if processed[event.ID] {
-			continue
-		}
-		if err := l.handleEvent(ctx, event); err != nil {
-			return startLedger, fmt.Errorf("handle event %s: %w", event.ID, err)
-		}
-	}
 	if latestLedgerSeq >= startLedger {
 		return latestLedgerSeq + 1, nil
 	}
