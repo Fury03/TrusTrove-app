@@ -155,7 +155,10 @@ export function Navbar() {
                     >
                       Buyer
                     </option>
-                    <option value="lp" className="bg-background text-foreground">
+                    <option
+                      value="lp"
+                      className="bg-background text-foreground"
+                    >
                       LP (Funder)
                     </option>
                   </select>

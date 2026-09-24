@@ -81,11 +81,11 @@ pnpm --filter web analyze
 
 That runs a production `next build` with `ANALYZE=true` and writes one interactive treemap per bundle to `apps/web/.next/analyze/`:
 
-| File | Covers |
-| --- | --- |
+| File          | Covers                            |
+| ------------- | --------------------------------- |
 | `client.html` | JavaScript shipped to the browser |
 | `nodejs.html` | The Node.js server runtime bundle |
-| `edge.html` | The edge runtime bundle |
+| `edge.html`   | The edge runtime bundle           |
 
 Open `apps/web/.next/analyze/client.html` in a browser — that is the one that determines what users download. Add `ANALYZE_OPEN=true` to have the reports opened automatically:
 

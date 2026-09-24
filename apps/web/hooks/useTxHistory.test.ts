@@ -12,10 +12,9 @@ import {
 import { useQuery, useQueryClient, QueryClient } from "@tanstack/react-query";
 
 vi.mock("@tanstack/react-query", async () => {
-  const actual =
-    await vi.importActual<typeof import("@tanstack/react-query")>(
-      "@tanstack/react-query",
-    );
+  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
+    "@tanstack/react-query",
+  );
   return { ...actual, useQuery: vi.fn(), useQueryClient: vi.fn() };
 });
 
@@ -461,9 +460,9 @@ describe("fetchPage", () => {
   it("throws a HorizonRateLimitError when the transaction page itself is throttled", async () => {
     transactionsCall.mockRejectedValue({ response: { status: 429 } });
 
-    await expect(
-      fetchPage("G123", undefined, vi.fn()),
-    ).rejects.toBeInstanceOf(HorizonRateLimitError);
+    await expect(fetchPage("G123", undefined, vi.fn())).rejects.toBeInstanceOf(
+      HorizonRateLimitError,
+    );
   });
 
   it("maps a matching contract operation into a history item", async () => {

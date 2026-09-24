@@ -1,6 +1,13 @@
 "use client";
 
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { formatAmount } from "@/lib/assets";
@@ -356,15 +363,49 @@ export function InvoiceTable({
               aria-label="Invoice Ledger"
             >
               <thead style={{ display: "block" }}>
-                <tr
-                  className="flex border-b border-border/60 bg-[#080c10]/80 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-500"
-                >
-                  <th scope="col" style={{ flex: COL_FLEX[0] }} className="text-left">Invoice ID</th>
-                  <th scope="col" style={{ flex: COL_FLEX[1] }} className="text-left">Buyer</th>
-                  <th scope="col" style={{ flex: COL_FLEX[2] }} className="text-left">Face Value</th>
-                  <th scope="col" style={{ flex: COL_FLEX[3] }} className="text-left">Discount</th>
-                  <th scope="col" style={{ flex: COL_FLEX[4] }} className="text-left">Due Date</th>
-                  <th scope="col" style={{ flex: COL_FLEX[5] }} className="text-left">Status</th>
+                <tr className="flex border-b border-border/60 bg-[#080c10]/80 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  <th
+                    scope="col"
+                    style={{ flex: COL_FLEX[0] }}
+                    className="text-left"
+                  >
+                    Invoice ID
+                  </th>
+                  <th
+                    scope="col"
+                    style={{ flex: COL_FLEX[1] }}
+                    className="text-left"
+                  >
+                    Buyer
+                  </th>
+                  <th
+                    scope="col"
+                    style={{ flex: COL_FLEX[2] }}
+                    className="text-left"
+                  >
+                    Face Value
+                  </th>
+                  <th
+                    scope="col"
+                    style={{ flex: COL_FLEX[3] }}
+                    className="text-left"
+                  >
+                    Discount
+                  </th>
+                  <th
+                    scope="col"
+                    style={{ flex: COL_FLEX[4] }}
+                    className="text-left"
+                  >
+                    Due Date
+                  </th>
+                  <th
+                    scope="col"
+                    style={{ flex: COL_FLEX[5] }}
+                    className="text-left"
+                  >
+                    Status
+                  </th>
                 </tr>
               </thead>
 
@@ -394,7 +435,13 @@ export function InvoiceTable({
                       }}
                       aria-selected={isActive}
                       // Roving tabindex: only the focused row is in the tab order.
-                      tabIndex={isFocusable ? (virtualRow.index === focusedIndex ? 0 : -1) : undefined}
+                      tabIndex={
+                        isFocusable
+                          ? virtualRow.index === focusedIndex
+                            ? 0
+                            : -1
+                          : undefined
+                      }
                       onClick={() => {
                         if (onSelectInvoice) {
                           setFocusedIndex(virtualRow.index);
@@ -419,26 +466,42 @@ export function InvoiceTable({
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
                     >
-                      <td style={{ flex: COL_FLEX[0] }} className="font-bold text-primary">
+                      <td
+                        style={{ flex: COL_FLEX[0] }}
+                        className="font-bold text-primary"
+                      >
                         {truncateAddress(invoice.id)}
                       </td>
-                      <td style={{ flex: COL_FLEX[1] }} className="text-slate-400">
+                      <td
+                        style={{ flex: COL_FLEX[1] }}
+                        className="text-slate-400"
+                      >
                         {truncateAddress(invoice.buyer)}
                       </td>
-                      <td style={{ flex: COL_FLEX[2] }} className="font-bold text-white">
+                      <td
+                        style={{ flex: COL_FLEX[2] }}
+                        className="font-bold text-white"
+                      >
                         {formatAmount(invoice.faceValue, invoice.asset)}
                       </td>
-                      <td style={{ flex: COL_FLEX[3] }} className="text-slate-300">
+                      <td
+                        style={{ flex: COL_FLEX[3] }}
+                        className="text-slate-300"
+                      >
                         {invoice.discountBps > 0
                           ? `${(invoice.discountBps / 100).toFixed(2)}%`
                           : "—"}
                       </td>
-                      <td style={{ flex: COL_FLEX[4] }} className="text-slate-400">
-                        {new Date(
-                          invoice.dueDate * 1000,
-                        ).toLocaleDateString()}
+                      <td
+                        style={{ flex: COL_FLEX[4] }}
+                        className="text-slate-400"
+                      >
+                        {new Date(invoice.dueDate * 1000).toLocaleDateString()}
                       </td>
-                      <td style={{ flex: COL_FLEX[5] }} className="flex justify-start">
+                      <td
+                        style={{ flex: COL_FLEX[5] }}
+                        className="flex justify-start"
+                      >
                         <InvoiceStatus status={invoice.status} />
                       </td>
                     </tr>

@@ -96,7 +96,9 @@ describe("InvoiceTable", () => {
   it("marks the active row with aria-selected=true", () => {
     render(<InvoiceTable invoices={mockInvoices as any} activeId="1" />);
     const rows = screen.getAllByRole("row");
-    const activeRow = rows.find((r) => r.getAttribute("aria-selected") === "true");
+    const activeRow = rows.find(
+      (r) => r.getAttribute("aria-selected") === "true",
+    );
     expect(activeRow).toBeTruthy();
   });
 
@@ -104,12 +106,17 @@ describe("InvoiceTable", () => {
   it("only the first data row has tabIndex=0 initially when selectable", () => {
     const onSelectInvoice = vi.fn();
     render(
-      <InvoiceTable invoices={mockInvoices as any} onSelectInvoice={onSelectInvoice} />,
+      <InvoiceTable
+        invoices={mockInvoices as any}
+        onSelectInvoice={onSelectInvoice}
+      />,
     );
     const rows = screen.getAllByRole("row");
     // rows[0] is the header row (<tr> in <thead>), rows[1] and rows[2] are data rows
     const dataRows = rows.filter((r) => r.getAttribute("tabindex") !== null);
-    const tabZeroRows = dataRows.filter((r) => r.getAttribute("tabindex") === "0");
+    const tabZeroRows = dataRows.filter(
+      (r) => r.getAttribute("tabindex") === "0",
+    );
     expect(tabZeroRows).toHaveLength(1);
   });
 
@@ -125,21 +132,29 @@ describe("InvoiceTable", () => {
   it("ArrowDown moves focus to the next row", () => {
     const onSelectInvoice = vi.fn();
     render(
-      <InvoiceTable invoices={mockInvoices as any} onSelectInvoice={onSelectInvoice} />,
+      <InvoiceTable
+        invoices={mockInvoices as any}
+        onSelectInvoice={onSelectInvoice}
+      />,
     );
     const rows = screen.getAllByRole("row");
     const firstDataRow = rows.find((r) => r.getAttribute("tabindex") === "0");
     expect(firstDataRow).toBeTruthy();
     fireEvent.keyDown(firstDataRow!, { key: "ArrowDown" });
     const rowsAfter = screen.getAllByRole("row");
-    const newFocused = rowsAfter.find((r) => r.getAttribute("tabindex") === "0");
+    const newFocused = rowsAfter.find(
+      (r) => r.getAttribute("tabindex") === "0",
+    );
     expect(newFocused).not.toBe(firstDataRow);
   });
 
   it("Enter key calls onSelectInvoice for the focused row", () => {
     const onSelectInvoice = vi.fn();
     render(
-      <InvoiceTable invoices={mockInvoices as any} onSelectInvoice={onSelectInvoice} />,
+      <InvoiceTable
+        invoices={mockInvoices as any}
+        onSelectInvoice={onSelectInvoice}
+      />,
     );
     const rows = screen.getAllByRole("row");
     const firstDataRow = rows.find((r) => r.getAttribute("tabindex") === "0");

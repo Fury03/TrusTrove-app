@@ -263,7 +263,11 @@ export async function fetchPage(
   // Being throttled is not the same as "this transaction has no contract ops":
   // fail the page loudly so the UI can tell the user to back off, rather than
   // rendering a silently incomplete history.
-  if (opsResults.some((r) => r.status === "rejected" && isRateLimitError(r.reason))) {
+  if (
+    opsResults.some(
+      (r) => r.status === "rejected" && isRateLimitError(r.reason),
+    )
+  ) {
     throw new HorizonRateLimitError();
   }
 

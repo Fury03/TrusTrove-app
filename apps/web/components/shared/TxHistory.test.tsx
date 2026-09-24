@@ -6,8 +6,7 @@ import { useTxHistory } from "@/hooks/useTxHistory";
 import type { TxHistoryItem } from "@/types";
 
 vi.mock("@/hooks/useTxHistory", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("@/hooks/useTxHistory")>();
+  const actual = await importOriginal<typeof import("@/hooks/useTxHistory")>();
   return { ...actual, useTxHistory: vi.fn() };
 });
 
